@@ -27,6 +27,7 @@
 
 #include "iperf_config.h"
 
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <time.h>
@@ -43,6 +44,7 @@
 #include <openssl/pem.h>
 #include <openssl/sha.h>
 #include <openssl/buffer.h>
+#include <openssl/mem.h>
 
 void sha256(const char *string, char outputBuffer[65])
 {
@@ -162,7 +164,7 @@ EVP_PKEY *load_pubkey_from_file(const char *file) {
 
     BIO_free(key);
     return (pkey);
-}   
+}
 
 EVP_PKEY *load_pubkey_from_base64(const char *buffer) {
     unsigned char *key = NULL;
@@ -222,16 +224,16 @@ int encrypt_rsa_message(const char *plaintext, EVP_PKEY *public_key, unsigned ch
 
     RSA_free(rsa);
     OPENSSL_free(rsa_buffer);
-    OPENSSL_free(bioBuff);  
+    OPENSSL_free(bioBuff);
 
-    return encryptedtext_len;  
+    return encryptedtext_len;
 }
 
 int decrypt_rsa_message(const unsigned char *encryptedtext, const int encryptedtext_len, EVP_PKEY *private_key, unsigned char **plaintext) {
     RSA *rsa = NULL;
     unsigned char *rsa_buffer = NULL, pad = RSA_PKCS1_PADDING;
     int plaintext_len, rsa_buffer_len, keysize;
-    
+
     rsa = EVP_PKEY_get1_RSA(private_key);
 
     keysize = RSA_size(rsa);
@@ -244,7 +246,7 @@ int decrypt_rsa_message(const unsigned char *encryptedtext, const int encryptedt
 
     RSA_free(rsa);
     OPENSSL_free(rsa_buffer);
-    OPENSSL_free(bioBuff);   
+    OPENSSL_free(bioBuff);
 
     return plaintext_len;
 }
@@ -264,7 +266,7 @@ int encode_auth_setting(const char *username, const char *password, EVP_PKEY *pu
 int decode_auth_setting(int enable_debug, char *authtoken, EVP_PKEY *private_key, char **username, char **password, time_t *ts){
     unsigned char *encrypted_b64 = NULL;
     size_t encrypted_len_b64;
-    Base64Decode(authtoken, &encrypted_b64, &encrypted_len_b64);        
+    Base64Decode(authtoken, &encrypted_b64, &encrypted_len_b64);
 
     unsigned char *plaintext = NULL;
     int plaintext_len;
